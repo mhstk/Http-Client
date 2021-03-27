@@ -1,5 +1,8 @@
 const { exit } = require("process")
 const Http_request = require("./httpClient")
+const fs = require('fs')
+
+
 let url;
 let method;
 let protocol;
@@ -8,10 +11,13 @@ let headers_str = "";
 let queries_in = "" ;
 let headers = {};
 let queries = "";
-let doubleHeaderKeyWarning = false;
-let data="";
+let warning = false;
+let body_data;
+let body_json;
+let body_file;
 let isXFromUrl = false;
 let isJson = false;
+let isFile = false;
 let timeout;
 
 const METHODS = ["GET" , "POST", "PATCH" , "DELETE", "PUT"];
@@ -33,52 +39,92 @@ function processArgument(argIndex, args){
     if (arg ==="-M" || arg === "--method"){
         method = args[argIndex+1];
         if (!checkMethod(method)){
-            console.log("ERROR! method should be one of [GET, POST, PATCH, DELETE, PUT].");
+            console.log("ERROR! Method should be one of [GET, POST, PATCH, DELETE, PUT].");
             exit()
         }
         method = method.toLowerCase();
-        // console.log("method:\t" + method);
         return argIndex+1;
+
     }else if(arg === "-H" || arg === "--headers") {
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
             headers_str += args[argIndex+1] + ",";
+        }else{
+            console.log("ERROR! Headers option badly used.");
+            exit();
         }
-        // console.log("headers_str:\t" + headers_str);
         return argIndex+1;
+
     }else if(arg === "-Q" || arg === "--queries") {
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
             queries_in += args[argIndex+1] + "&";
+        }else{
+            console.log("ERROR! Queries option badly used.");
+            exit();
         }
-        // console.log("queries_in:\t" + queries_in);
         return argIndex+1;
+
     }else if(arg === "-D" || arg === "--data") {
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
-            data += args[argIndex+1] + "&";
+            body_data = args[argIndex+1] + "&";
             headers["content-type"] = "application/x-www-from-urlencoded"
             isXFromUrl = true;
-            // headers["content-length"] = Buffer.byteLength(data);
+    
+        }else{
+            console.log("ERROR! Data option badly used.");
+            exit();
         }
-        // console.log("queries_in:\t" + queries_in);
         return argIndex+1;
+
     }else if(arg === "--json") {
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
-            data += args[argIndex+1] ;
+            body_json = args[argIndex+1] ;
             headers["content-type"] = "application/josn"
             isJson = true;
-            // headers["content-length"] = Buffer.byteLength(data);
+        }else{
+            console.log("ERROR! Json option badly used.");
+            exit();
         }
-        // console.log("queries_in:\t" + queries_in);
         return argIndex+1;
+
+    }else if(arg === "--file") {
+        if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
+            body_file = getDataOfFile(args[argIndex+1]) ;
+            if (body_file !== undefined){
+                headers["content-type"] = "application/octet-stream"
+                isFile = true;
+            }else{
+                console.log("ERROR! File option badly used.");
+                exit();
+            }
+        }
+        return argIndex+1;
+
     }else if(arg === "--timeout") {
-        let re = /(\d)+/g
+        let re = /^(\d)+$/g
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== "" && args[argIndex+1].match(re)){
             timeout = parseInt(args[argIndex+1])*1000;
             // headers["content-length"] = Buffer.byteLength(data);
+        }else{
+            console.log("ERROR! Timeout option badly used.");
+            exit();
         }
-        // console.log("queries_in:\t" + queries_in);
         return argIndex+1;
+
     }else{
         console.log("ERROR! bad argument.");
+        exit();
+    }
+}
+
+
+function getDataOfFile(addr){
+    
+    try{
+        fs.statSync(addr);
+        let data = fs.readFileSync(addr);
+        return data;
+    }catch(err){
+        console.log("ERROR! problem reading the file.");
         exit();
     }
 }
@@ -103,8 +149,8 @@ function processHeaders(str, delimiter, keyValueDelimiter){
         }
         let value = elements[ele].split(keyValueDelimiter)[1];
         if (name in outObj){
-            doubleHeaderKeyWarning = true
-            console.log(`WARNING! multiple value for "${name}".`);
+            warning = true
+            console.log(`WARNING! Multiple value for "${name}".`);
         }
         outObj[name] = value;
     }
@@ -131,7 +177,7 @@ function isJsonValidString(str){
 
 
 
-
+console.log();
 for (let i = 1; i<args.length; i++){
     i = processArgument(i, args)
 }
@@ -150,28 +196,43 @@ queries = createQueries(queriesObj);
 
 // console.log(queries);
 // exit();
+let data="";
 
-
-if (data != "" && data != undefined){
+if ((body_data !== undefined) || (body_json !== undefined) || body_file !== undefined){
+    if (isXFromUrl + isJson + isFile > 1){
+        console.log(`ERROR! You have used incompatible arguments together.`);
+        exit();
+    }
     if (isXFromUrl){
-        data = data.slice(0,-1);
+        body_data = body_data.slice(0,-1);
         let reXFormUrl = /^([^=&\s])+=([^=&\s])+(&([^=&\s])+=([^=&\s])+)*$/g;
-        if (!data.match(reXFormUrl)){
-            console.log(`WARNING! body not in "x-www-form-urlencoded" format.`);
+        if (!body_data.match(reXFormUrl)){
+            warning = true;
+            console.log(`WARNING! Body not in x-www-form-urlencoded format.`);
         }
-    }else if (isJson){
-        if (!isJsonValidString(data)){
-            console.log(`WARNING! body not in "json" format.`);
+    }
+    if (isJson){
+        if (!isJsonValidString(body_json)){
+            warning = true;
+            console.log(`WARNING! Body not in json format.`);
         }
+    }
+    if (body_data !== undefined && body_data !== ""){
+        data = body_data;
+    }
+    if (body_json !== undefined && body_json !== ""){
+        data = body_json;
+    }
+    if (body_file !== undefined){
+        data = body_file;
     }
 }
 
 
 
 
-if (doubleHeaderKeyWarning){
-    console.log("\n");
-    console.log("--------------------------------------------------------------");
+if (warning){
+    console.log("==========================================================================================================");
 }
 path = url.pathname;
 path += "?" + queries;

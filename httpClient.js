@@ -43,18 +43,6 @@ class Http_request {
         let dataReadStream = new stream.Readable();
         dataReadStream._read = function() {};
         
-        // fileWriteStream.on("end", ()=>{
-        //     console.log("pppp");
-        // })
-        // fileWriteStream.on("finish", ()=>{
-        //     console.log("ffff");
-        // })
-        // dataReadStream.on("finish", ()=>{
-        //     console.log("QQQQQQ");
-        // })
-        // dataReadStream.on("end", ()=>{
-        //     console.log("GGGGGG");
-        // })
         let isDownloadedFile = false;
 
 
@@ -97,12 +85,7 @@ class Http_request {
                         filename = this.FILES_DIRECTORY + "/" +filename;
                         let fileWriteStream = fs.createWriteStream(filename);
                         
-                        // fileWriteStream.close()
-                        
-                        // dataReadStream.on("data", ()=>{
-                            //     console.log("KKKK");
-                            // })
-                            
+
                         dataReadStream.pipe(fileWriteStream);
                         console.log(`File successfuly saved to "${filename}"`);
                         fileWriteStream.on("error", ()=>{
@@ -126,9 +109,11 @@ class Http_request {
 
         req.on("response", (response) => {
             this.print_data(response, this.protocol)
-            console.log("\n===========================================================================================================\nData:");
-            var totalBytes = response.headers["content-length"];
-            progressBar.start(totalBytes, 0);
+            console.log("\n-----------------------------------------------------------------------------------------------------------\nData:");
+            if ("content-length" in response.headers){
+                var totalBytes = response.headers["content-length"];
+                progressBar.start(totalBytes, 0);
+            }
         })
 
 
@@ -142,7 +127,7 @@ class Http_request {
             progressBar.stop();
         });
 
-        if (this.body !== undefined){
+        if (this.body !== undefined && this.body !== ""){
             req.write(this.body);
         }
 
@@ -160,10 +145,6 @@ class Http_request {
 
 
         //writing readStream to file
-        
-
-
-
     }
 
     getFileExtention(contentType){
