@@ -65,7 +65,7 @@ function processArgument(argIndex, args){
 
     }else if(arg === "-D" || arg === "--data") {
         if (args[argIndex+1] !== undefined && args[argIndex+1] !== ""){
-            body_data = args[argIndex+1] + "&";
+            body_data = args[argIndex+1];
             headers["content-type"] = "application/x-www-from-urlencoded"
             isXFromUrl = true;
     
@@ -204,7 +204,6 @@ if ((body_data !== undefined) || (body_json !== undefined) || body_file !== unde
         exit();
     }
     if (isXFromUrl){
-        body_data = body_data.slice(0,-1);
         let reXFormUrl = /^([^=&\s])+=([^=&\s])+(&([^=&\s])+=([^=&\s])+)*$/g;
         if (!body_data.match(reXFormUrl)){
             warning = true;
