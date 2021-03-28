@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cli-progress": "^3.9.0"
+    "cli-progress": "^3.9.0",
+    "valid-url": "^1.0.9"
   }
 }
