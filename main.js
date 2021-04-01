@@ -170,20 +170,28 @@ function isJsonValidString(str){
 
 console.log();
 
+
 let args = process.argv.slice(2);
-try{
-    url = new URL(args[0])
-}catch(err){
-    console.log("ERROR! URL not valid.");
-    exit()
-  
-}
-let urlRegexStr = "^(http[s]?:\\/\\/(www\\.)?|ftp:\\/\\/(www\\.)?|(www\\.)?){1}([0-9A-Za-z-\\.@:%_\+~#=]+)+((\\.[a-zA-Z]{2,3})+)(/(.)*)?(\\?(.)*)?";
-let urlRegex = new RegExp(urlRegexStr, "g");
+
+let urlRegex = /^(http[s]?:\/\/(www\.)?|(www\.)?){1}([0-9A-Za-z-\.@:%_\+~#=])+((\.[a-zA-Z]{2,5})+)(\/(.)*)?(\?(.)*)?$/g;
 if (!args[0].match(urlRegex)){
     console.log("ERROR! URL not valid.");
     exit();
 }
+
+
+try{
+    url = new URL(args[0])
+}catch(err){
+    try{
+        url = new URL("http://"+args[0])
+    }catch (err){
+        console.log("ERROR! URL not valid.");
+        exit()
+    }
+  
+}
+
 
 
 for (let i = 1; i<args.length; i++){
