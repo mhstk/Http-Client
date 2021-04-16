@@ -199,7 +199,7 @@ for (let i = 1; i<args.length; i++){
 }
 
 if (headers_str !== ""){
-    headers = processHeaders(headers_str, ",", ":");
+    headers = {...headers, ...processHeaders(headers_str, ",", ":")};
 }
 // console.log(headers);
 // exit();

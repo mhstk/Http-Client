@@ -1,0 +1,20 @@
+To view request:
+https://webhook.site/
+
+To get response with a delayed time:
+http://slowwly.robertomurray.co.uk/delay/1000/url/https://www.google.com
+
+Dummy pdf to download:
+https://app.printnode.com/testpdfs/multipage.pdf
+
+Files with diffrent size to download:
+http://xcal1.vodafone.co.uk/
+
+mp4 file:
+https://aspb19.cdn.asset.aparat.com/aparat-video/2af4164b61f5a3be0b6f0ffb82e3b19d31295886-720p.mp4?wmsAuthSign=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6ImI4ODc1OWFkMDRkYTIwODhhMjEwZmEzN2E3NjJkOGI3IiwiZXhwIjoxNjE2ODY5ODUzLCJpc3MiOiJTYWJhIElkZWEgR1NJRyJ9.UUDKVBRfiGN03kUo3q20xjS2qkhRl2BdF5X4BwrZ4zQ
+
+jpeg file:
+https://www.wallpaperbetter.com/wallpaper/288/584/838/awesome-leopar-high-resolution-jpeg-1080P-wallpaper.jpg
+
+png file:
+https://i.dlpng.com/static/png/6537886_preview.png

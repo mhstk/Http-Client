@@ -47,8 +47,8 @@ class Http_request {
 
 
         let recievedLength = 0;
+        let cancel_abort = false
         
-
 
 
         let req = proto.request({
@@ -63,12 +63,14 @@ class Http_request {
             // console.log(res);
             res.on("data" , d => {
                 isDownloadedFile = this.processData(res.headers, dataReadStream ,d, this.SUPPORTABLE_EXTE);
-                recievedLength += d.length
+                recievedLength += d.length;
                 progressBar.update(recievedLength);
+                cancel_abort = true;
                 
 
             })
             res.on("end", d => {
+                cancel_abort = true;
                 progressBar.stop();
                 if (isDownloadedFile){
                     try{
@@ -133,9 +135,11 @@ class Http_request {
 
         if (this.timeout !== undefined){
             req.setTimeout(this.timeout, () => {
-                console.log("***TIMEOUT***");
-                req.destroy();
-                exit();
+                if (!cancel_abort){
+                    console.log("\n***TIMEOUT***");
+                    req.destroy();
+                    exit();
+                }
             });
         }
 
